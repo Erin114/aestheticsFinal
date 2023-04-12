@@ -58,6 +58,8 @@ void loop() {
         
 }
 
+//converts cartesian coordinates into the coordinates used by the LED matrix
+// x range 0-15, y range 0-31, true = on, false = off
 void ledCoordinate(int x, int y, bool status)
 {
   if (x > 15 || y > 31) {return;}
