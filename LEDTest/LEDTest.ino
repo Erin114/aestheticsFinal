@@ -44,21 +44,44 @@ void loop() {
     parallel to 6, so on and so forth. (0,0) on addresses 0-3 is (7,7) on 4-7
   */
   //we have to init all devices in a loop
-  int addInv = 7;
-  for(int row=0;row<8;row++) {
-    for(int col=0;col<8;col++) {
-      addInv = 7;
-      for(int address=0;address<devices/2;address++) {
-        
-         // delay(delaytime);
-        lc.setLed(address,row,col,true);
-        lc.setLed(addInv,7-row,7-col,true);
-        delay(delaytime);
-        lc.setLed(address,row,col,false);
-        lc.setLed(addInv,7-row,7-col,false);
-        addInv--;
-        
-      }
-    }
+
+  for (int y = 0; y < 32; y++)
+  {
+    ledCoordinate(15,y,true);
+    ledCoordinate(0,y,true);
+    delay(delaytime);
+    ledCoordinate(15,y,false);
+    ledCoordinate(0,y,false);
+
+
   }
+        
+}
+
+void ledCoordinate(int x, int y, bool status)
+{
+  if (x > 15 || y > 31) {return;}
+  bool invert = false;
+  int address = 0;
+  if (x > 7)
+  {
+    invert = true;    
+  }
+  if (y >= 8)
+  {address = 1;}
+  if (y >= 16) 
+  {address = 2;}
+  if (y >= 24)
+  {address = 3;}
+
+  if (invert == true)
+  {
+    lc.setLed(7-address,7-(x%8),(y%8),status);
+  }
+  else
+  {
+     lc.setLed(address,(x%8),7-(y%8),status);
+  }
+  
+
 }
