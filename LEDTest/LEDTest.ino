@@ -45,13 +45,13 @@ void loop() {
   */
   //we have to init all devices in a loop
 
-  for (int y = 0; y < 32; y++)
+  for (int x = 0; x < 16; x++)
   {
-    ledCoordinate(15,y,true);
-    ledCoordinate(0,y,true);
+    ledCoordinate(x,0,true);
+    ledCoordinate(15-x,31,true);
     delay(delaytime);
-    ledCoordinate(15,y,false);
-    ledCoordinate(0,y,false);
+    ledCoordinate(x,0,false);
+    ledCoordinate(15-x,31,false);
 
 
   }
