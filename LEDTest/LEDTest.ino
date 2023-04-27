@@ -1,6 +1,12 @@
 //We always have to include the library
 #include "LedControl.h"
 
+enum pointState {
+  off,
+  on,
+  dead
+};
+
 /*
  Now we need a LedControl to work with.
  ***** These pin numbers will probably not work with your hardware *****
@@ -14,6 +20,8 @@ LedControl lc=LedControl(8,6,7,8);
 
 /* we always wait a bit between updates of the display */
 unsigned long delaytime=100;
+pointState matrix[32][16] = {};
+
 
 /* 
  This time we have more than one device. 
@@ -86,4 +94,50 @@ void ledCoordinate(int x, int y, bool status)
   }
   
 
+}
+
+
+bool is_neighbor_on(int x, int y, int width, int height, pointState ** grid) 
+{
+  return ( ( x > 0 && grid[x-1][y] == on )
+    || ( y > 0 && grid[x][y-1] == on )
+    || ( x < width - 1 && grid[x+1][y] == on )
+    || ( y < height - 1 && grid[x][y+1] == on ) );
+}
+
+pointState step_point(int x, int y, int width, int height, pointState ** grid)
+{
+  pointState current_state = grid[x][y];
+  if (current_state == on) 
+  {
+    return dead;
+  }
+  else if (current_state == dead)
+  {
+    return off;
+  }
+  else 
+  {
+    if (is_neighbor_on(x, y, width, height, grid))
+    {
+      return on;
+    }
+    else 
+    {
+      return off;
+    }
+  }
+}
+
+pointState ** step_grid(int x, int y, int width, int height, pointState ** grid, pointState ** out)
+{
+  for (int row = 0; row < height; row++) 
+  {
+    for (int column = 0; column < width; column++) 
+    {
+      out[row][column] = step_point(row, column, width, height, grid);
+    }
+  }
+
+  return out;
 }
