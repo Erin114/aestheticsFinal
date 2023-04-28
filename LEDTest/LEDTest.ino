@@ -84,13 +84,21 @@ void loop() {
   //Serial.println(analogRead(prR));
 
   currentTime = millis();
-  
+
   int x,y;
 
-  if (currentTime - startTime >= period || startInput == false) 
+  if (currentTime - startTime >= period || startInput == false)
   {
-    long rangeL = map(analogRead(prL), 13, 993, 0, 50);
-    long rangeR = map(analogRead(prR), 4, 958, 0, 50);
+	long rawL = analogRead(prL);
+	long rawR = analogRead(prR);
+
+	lowestReadingR = min(lowestReadingR, rawR);
+	highestReadingR = max(highestReadingR, rawR);
+	lowestReadingL = min(lowestReadingL, rawL);
+	highestReadingL = max(highestReadingL, rawL);
+
+    long rangeL = map(analogRead(prL), lowestReadingL, highestReadingL, 0, 50);
+    long rangeR = map(analogRead(prR), lowestReadingR, highestReadingR, 0, 50);
     long difference = rangeR - rangeL;
     long result = 50 + difference;
     Serial.println(result);
