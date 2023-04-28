@@ -20,7 +20,14 @@ LedControl lc=LedControl(8,6,7,8);
 
 /* we always wait a bit between updates of the display */
 unsigned long delaytime=100;
-pointState matrix[32][16] = {};
+pointState currentState[32][16] = {};
+pointState pastState[32][16] = {};
+const width = 32;
+const height = 16;
+
+/* the left and right photoresistors */
+const int prL = A7; // left
+const int prR = A6; // right
 
 
 /* 
@@ -40,6 +47,7 @@ void setup() {
     /* and clear the display */
     lc.clearDisplay(address);
   }
+  Serial.begin(9600);
 }
 
 void loop() { 
@@ -53,17 +61,53 @@ void loop() {
   */
   //we have to init all devices in a loop
 
-  for (int x = 0; x < 16; x++)
+  // for (int x = 0; x < 16; x++)
+  // {
+  //   ledCoordinate(x,0,true);
+  //   ledCoordinate(15-x,31,true);
+  //   delay(delaytime);
+  //   ledCoordinate(x,0,false);
+  //   ledCoordinate(15-x,31,false);
+
+
+  // }
+
+  //Serial.println(analogRead(prL));
+  //Serial.println(analogRead(prR));
+  long rangeL = map(analogRead(prL), 13, 993, 0, 50);
+  long rangeR = map(analogRead(prR), 4, 958, 0, 50);
+  long difference = rangeR - rangeL;
+  long result = 50 + difference;
+  Serial.println(result);
+
+  int x = floor(width / result) * 10;
+  int y = floor(random(height - 1));
+  Serial.println(x + "," + y);
+
+  currentState[x][y] = on;
+  // RINGS
+  // create surrogates (functions get mad when you give them dynamic 2D arrays)
+  pointState* cS[16];
+  pointState* lS[16];
+  // fill surrogates
+  for (int i = 0; i < height; i++)
   {
-    ledCoordinate(x,0,true);
-    ledCoordinate(15-x,31,true);
-    delay(delaytime);
-    ledCoordinate(x,0,false);
-    ledCoordinate(15-x,31,false);
-
-
+    cS[i] = currentState[i];
+    lS[i] = lastState[i];
   }
-        
+  // step current state
+  currentState = step_grid(x, y, width, height, cS, lS);
+  // update last states
+  lastState = currentState;
+
+  // display the grid
+  for (int i = 0; i < height; i++)
+  {
+    for (int j = 0; j < width; j++)
+    {
+      //if (current)
+    }
+  }
 }
 
 //converts cartesian coordinates into the coordinates used by the LED matrix
