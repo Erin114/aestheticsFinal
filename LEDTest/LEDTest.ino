@@ -26,7 +26,7 @@ const int width = 16;
 const int height = 32;
 unsigned long startTime;
 unsigned long currentTime;
-const unsigned long period = 1000;
+const unsigned long period = 2000;
 bool startInput = false;
 
 /* the left and right photoresistors */
