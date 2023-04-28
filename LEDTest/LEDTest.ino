@@ -22,8 +22,8 @@ LedControl lc=LedControl(8,6,7,8);
 unsigned long delaytime=100;
 pointState currentState[32][16] = {};
 pointState pastState[32][16] = {};
-const width = 32;
-const height = 16;
+const int width = 32;
+const int height = 16;
 
 /* the left and right photoresistors */
 const int prL = A7; // left
@@ -85,6 +85,7 @@ void loop() {
   Serial.println(x + "," + y);
 
   currentState[x][y] = on;
+  
   // RINGS
   // create surrogates (functions get mad when you give them dynamic 2D arrays)
   pointState* cS[16];
@@ -93,21 +94,32 @@ void loop() {
   for (int i = 0; i < height; i++)
   {
     cS[i] = currentState[i];
-    lS[i] = lastState[i];
+    lS[i] = pastState[i];
   }
   // step current state
-  currentState = step_grid(x, y, width, height, cS, lS);
-  // update last states
-  lastState = currentState;
+  pointState ** steppedGrid = step_grid(x, y, width, height, cS, lS);
+
+  // update our original arrays
+  for (int i = 0; i < height; i++)
+  {
+    for (int j = 0; j < width; j++)
+    {
+      pastState[i][j] = currentState[i][j] = steppedGrid[i][j];
+    }
+  }
 
   // display the grid
   for (int i = 0; i < height; i++)
   {
     for (int j = 0; j < width; j++)
     {
-      //if (current)
+      if (currentState[i][j] == on)
+      {
+        ledCoordinate(i, j, true);
+      } else ledCoordinate(i, j, false);
     }
   }
+
 }
 
 //converts cartesian coordinates into the coordinates used by the LED matrix
