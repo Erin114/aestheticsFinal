@@ -20,10 +20,10 @@ LedControl lc=LedControl(8,6,7,8);
 
 /* we always wait a bit between updates of the display */
 unsigned long delaytime=100;
-pointState currentState[32][16] = {};
-pointState pastState[32][16] = {};
-const int width = 32;
-const int height = 16;
+pointState currentState[16][32] = {};
+pointState pastState[16][32] = {};
+const int width = 16;
+const int height = 32;
 unsigned long startTime;
 unsigned long currentTime;
 const unsigned long period = 1000;
@@ -95,21 +95,23 @@ void loop() {
     long result = 50 + difference;
     Serial.println(result);
 
-    x = floor(width / result) * 10;
-    y = floor(random(height - 1));
-    Serial.println(x + "," + y);
+    y = result * 31 / 100;
+    x = floor(random(width - 1));
+    Serial.print(x);
+    Serial.print(", ");
+    Serial.println(y);
+	//ledCoordinate(x, y, true);
 
     currentState[x][y] = on;
 
     startTime = currentTime;
     startInput = true;
   }
-  
-  
+
   // RINGS
   // create surrogates (functions get mad when you give them dynamic 2D arrays)
-  pointState* cS[16];
-  pointState* lS[16];
+  pointState* cS[height];
+  pointState* lS[height];
   // fill surrogates
   for (int i = 0; i < height; i++)
   {
@@ -117,26 +119,26 @@ void loop() {
     lS[i] = pastState[i];
   }
   // step current state
-  pointState ** steppedGrid = step_grid(x, y, width, height, cS, lS);
+  pointState ** steppedGrid = step_grid(width, height, cS, lS);
 
   // update our original arrays
-  for (int i = 0; i < height; i++)
+  for (int y = 0; y < height; y++)
   {
-    for (int j = 0; j < width; j++)
+    for (int x = 0; x < width; x++)
     {
-      pastState[i][j] = currentState[i][j] = steppedGrid[i][j];
+      pastState[x][y] = currentState[x][y] = steppedGrid[x][y];
     }
   }
 
   // display the grid
-  for (int i = 0; i < height; i++)
+  for (int y = 0; y < height; y++)
   {
-    for (int j = 0; j < width; j++)
+    for (int x = 0; x < width; x++)
     {
-      if (currentState[i][j] == on)
+      if (currentState[x][y] == on)
       {
-        ledCoordinate(i, j, true);
-      } else ledCoordinate(i, j, false);
+        ledCoordinate(x, y, true);
+      } else ledCoordinate(x, y, false);
     }
   }
 
@@ -151,11 +153,11 @@ void ledCoordinate(int x, int y, bool status)
   int address = 0;
   if (x > 7)
   {
-    invert = true;    
+    invert = true;
   }
   if (y >= 8)
   {address = 1;}
-  if (y >= 16) 
+  if (y >= 16)
   {address = 2;}
   if (y >= 24)
   {address = 3;}
@@ -168,12 +170,12 @@ void ledCoordinate(int x, int y, bool status)
   {
      lc.setLed(address,(x%8),7-(y%8),status);
   }
-  
+
 
 }
 
 
-bool is_neighbor_on(int x, int y, int width, int height, pointState ** grid) 
+bool is_neighbor_on(int x, int y, int width, int height, pointState ** grid)
 {
   return ( ( x > 0 && grid[x-1][y] == on )
     || ( y > 0 && grid[x][y-1] == on )
@@ -184,7 +186,7 @@ bool is_neighbor_on(int x, int y, int width, int height, pointState ** grid)
 pointState step_point(int x, int y, int width, int height, pointState ** grid)
 {
   pointState current_state = grid[x][y];
-  if (current_state == on) 
+  if (current_state == on)
   {
     return dead;
   }
@@ -192,26 +194,26 @@ pointState step_point(int x, int y, int width, int height, pointState ** grid)
   {
     return off;
   }
-  else 
+  else
   {
     if (is_neighbor_on(x, y, width, height, grid))
     {
       return on;
     }
-    else 
+    else
     {
       return off;
     }
   }
 }
 
-pointState ** step_grid(int x, int y, int width, int height, pointState ** grid, pointState ** out)
+pointState ** step_grid(int width, int height, pointState ** grid, pointState ** out)
 {
-  for (int row = 0; row < height; row++) 
+  for (int y = 0; y < height; y++)
   {
-    for (int column = 0; column < width; column++) 
+    for (int x = 0; x < width; x++)
     {
-      out[row][column] = step_point(row, column, width, height, grid);
+      out[x][y] = step_point(x, y, width, height, grid);
     }
   }
 
