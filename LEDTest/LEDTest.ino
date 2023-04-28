@@ -24,6 +24,10 @@ pointState currentState[32][16] = {};
 pointState pastState[32][16] = {};
 const int width = 32;
 const int height = 16;
+unsigned long startTime;
+unsigned long currentTime;
+const unsigned long period = 1000;
+bool startInput = false;
 
 /* the left and right photoresistors */
 const int prL = A7; // left
@@ -47,6 +51,10 @@ void setup() {
     /* and clear the display */
     lc.clearDisplay(address);
   }
+
+  // set initial timer for timer
+  startTime = millis();
+
   Serial.begin(9600);
 }
 
@@ -74,17 +82,29 @@ void loop() {
 
   //Serial.println(analogRead(prL));
   //Serial.println(analogRead(prR));
-  long rangeL = map(analogRead(prL), 13, 993, 0, 50);
-  long rangeR = map(analogRead(prR), 4, 958, 0, 50);
-  long difference = rangeR - rangeL;
-  long result = 50 + difference;
-  Serial.println(result);
 
-  int x = floor(width / result) * 10;
-  int y = floor(random(height - 1));
-  Serial.println(x + "," + y);
+  currentTime = millis();
+  
+  int x,y;
 
-  currentState[x][y] = on;
+  if (currentTime - startTime >= period || startInput == false) 
+  {
+    long rangeL = map(analogRead(prL), 13, 993, 0, 50);
+    long rangeR = map(analogRead(prR), 4, 958, 0, 50);
+    long difference = rangeR - rangeL;
+    long result = 50 + difference;
+    Serial.println(result);
+
+    x = floor(width / result) * 10;
+    y = floor(random(height - 1));
+    Serial.println(x + "," + y);
+
+    currentState[x][y] = on;
+
+    startTime = currentTime;
+    startInput = true;
+  }
+  
   
   // RINGS
   // create surrogates (functions get mad when you give them dynamic 2D arrays)
